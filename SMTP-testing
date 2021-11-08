@@ -1,0 +1,104 @@
+//#include "stdafx.h"
+#include <tchar.h>
+#include <Windows.h>
+#include <Lmcons.h>
+#include <iostream>
+
+#include "EASendMailObj.tlh"
+using namespace EASendMailObjLib;
+using namespace std;
+
+const int ConnectNormal = 0;
+const int ConnectSSLAuto = 1;
+const int ConnectSTARTTLS = 2;
+const int ConnectDirectSSL = 3;
+const int ConnectTryTLS = 4;
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+    TCHAR username[UNLEN + 1];
+    DWORD username_len = UNLEN + 1;
+    GetUserName((TCHAR*)username, &username_len);
+
+    wcout << "Hi " << username << "\n";
+
+    TCHAR compname[UNCLEN + 1];
+    DWORD compname_len = UNCLEN + 1;
+    GetComputerName((TCHAR*)compname, &compname_len);
+
+    wcout << compname << endl;
+
+#define INFO_BUFFER_SIZE 32767
+    TCHAR  infoBuf[INFO_BUFFER_SIZE];
+    DWORD  bufCharCount = INFO_BUFFER_SIZE;
+    // Get and display the name of the computer.
+    if (!GetComputerName(infoBuf, &bufCharCount))
+        wcout << (TEXT("GetComputerName"));
+    _tprintf(TEXT("\nComputer name:      %s"), infoBuf);
+
+    // Get and display the user name.
+    if (!GetUserName(infoBuf, &bufCharCount))
+        wcout << (TEXT("GetUserName"));
+    _tprintf(TEXT("\nUser name:          %s"), infoBuf);
+
+    ::CoInitialize(NULL);
+
+    IMailPtr oSmtp = NULL;
+    oSmtp.CreateInstance(__uuidof(EASendMailObjLib::Mail));
+    oSmtp->LicenseCode = _T("TryIt");
+
+    // Set your sender email address
+    oSmtp->FromAddr = _T("sabourinresearchproject@gmail.com");
+
+    // Add recipient email address
+    oSmtp->AddRecipientEx(_T("sabourinresearchproject@gmail.com"), 0);
+
+    // Set email subject
+    oSmtp->Subject = _T("Test");
+
+    // Set HTML body format
+    oSmtp->BodyFormat = 1;
+
+    // Set HTML body text
+    oSmtp->BodyText = _T("");
+
+    // Add attachment from local disk
+    if (oSmtp->AddAttachment(_T("C:\\Users\\Sabby's Laptop\\log.txt")) != 0)
+    {
+        _tprintf(_T("Failed to add attachment with error: %s\r\n"),
+            (const TCHAR*)oSmtp->GetLastErrDescription());
+    }
+
+    // Your SMTP server address
+    oSmtp->ServerAddr = _T("smtp.gmail.com");
+
+    // User and password for ESMTP authentication, if your server doesn't
+    // require User authentication, please remove the following codes.
+    oSmtp->UserName = _T("sabourinresearchproject@gmail.com");
+    oSmtp->Password = _T("ResearchProject21!");
+
+    // Most mordern SMTP servers require SSL/TLS connection now.
+    // ConnectTryTLS means if server supports SSL/TLS, SSL/TLS will be used automatically.
+    //oSmtp->ConnectType = ConnectTryTLS;
+
+    // If your SMTP server uses 587 port
+    oSmtp->ServerPort = 587;
+
+    // If your SMTP server requires SSL/TLS connection on 25/587/465 port
+    // oSmtp->ServerPort = 25; // 25 or 587 or 465
+    oSmtp->ConnectType = ConnectSSLAuto;
+
+    _tprintf(_T("Start to send HTML email ...\r\n"));
+
+    if (oSmtp->SendMail() == 0)
+    {
+        _tprintf(_T("email was sent successfully!\r\n"));
+    }
+    else
+    {
+        _tprintf(_T("failed to send email with the following error: %s\r\n"),
+            (const TCHAR*)oSmtp->GetLastErrDescription());
+    }
+
+    return 0;
+}
